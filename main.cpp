@@ -23,7 +23,7 @@ class Morphology{
         colOrigin = colO;
         rowFrameSize = numStructRows/2;
         colFrameSize = numStructCols/2;
-        extraRows = numStructCols*2;
+        extraRows = rowFrameSize*2;
         extraCols = colFrameSize*2;
         rowSize = numImgRows+extraRows;
         colSize = numImgCols+extraCols;
@@ -40,6 +40,7 @@ class Morphology{
             delete[] tempAry[i];
             delete[] structAry[i];
         }
+        cout << "Deleted all arrays..." << endl;
     }
 
     void allocateArrs(){
@@ -69,11 +70,12 @@ class Morphology{
     void loadImg(ifstream& img){
         //load imgFile to zeroFramedAry inside of frame,
         //begins at (rowOrigin, colOrigin)
-        int rowstart=rowFrameSize+1;
-        int colstart=colFrameSize+1;
+        int rowstart=rowFrameSize;
+        int colstart=colFrameSize;
+
         if(img.is_open()){
             for(int i=rowstart; i<(rowSize-rowstart); i++){
-                for(int j=colstart; j<=(colSize-colstart)+1; j++){
+                for(int j=colstart; j<(colSize-colstart); j++){
                     img >> zeroFramedAry[i][j];
                 }
             }
@@ -178,6 +180,7 @@ class Morphology{
                     out << "1 ";
                 }
             }
+            out << endl;
         }
     }
 
@@ -187,14 +190,22 @@ class Morphology{
         outFile << imgMin << " ";
         outFile << imgMax << " ";
         outFile << endl;
-        int rowstart=rowFrameSize+1;
-        int colstart=colFrameSize+1;
-        for(int i=rowstart; i<(rowSize-rowstart-1)-1; i++){
-            for(int j=colstart; j<=(colSize-colstart)+1; j++){
+        int rowstart=rowFrameSize;
+        int colstart=colFrameSize;
+        for(int i=rowstart; i<(rowSize-rowstart); i++){
+            for(int j=colstart; j<(colSize-colstart); j++){
                 outFile << ary[i][j] << " ";
             }
             outFile << endl;
         }
+    }
+
+    void addBorder(ofstream& out){
+        out << endl;
+        for(int i=0; i<colSize; i++){
+            out << "--";
+        }
+        out << endl;
     }
 };
 
@@ -246,48 +257,57 @@ int main(int argc, char *argv[]){
         structFile >> colOrigin;
     }
 
-    cout << "Step 1 complete" << endl;
     //Step 2
     Morphology morph = Morphology(imgRows, imgCols, imgMin, imgMax, strctRows, strctCols, rowOrigin, colOrigin);
-    cout << "morph class created" << endl;
     morph.allocateArrs();
 
-    cout << "Step 2 complete" << endl;
     //Step 3
     morph.zero2DAry(morph.zeroFramedAry, morph.rowSize, morph.colSize);
 
     //Step 4
     morph.loadImg(imgFile);
+    prettyPrintFile << "Image File:" << endl;
     morph.prettyPrint(morph.zeroFramedAry, prettyPrintFile);
+    morph.addBorder(prettyPrintFile);
 
     //setp 5
     morph.zero2DAry(morph.structAry, morph.numStructRows, morph.numStructCols);
     morph.loadStruct(structFile);
+    prettyPrintFile << "Structure Element:" << endl;
     morph.prettyPrintStruct(morph.structAry, prettyPrintFile);
+    morph.addBorder(prettyPrintFile);
 
     //step 6
     morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
     morph.computeDilation(morph.zeroFramedAry, morph.morphAry);
     morph.aryToFile(morph.morphAry, dilateOutFile);
+    prettyPrintFile << "Array after Dilation:" << endl;
     morph.prettyPrint(morph.morphAry, prettyPrintFile);
+    morph.addBorder(prettyPrintFile);
 
     //step 7
     morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
     morph.computeErosion(morph.zeroFramedAry, morph.morphAry);
     morph.aryToFile(morph.morphAry, erodeOutFile);
+    prettyPrintFile << "Array after Erosion:" << endl;
     morph.prettyPrint(morph.morphAry, prettyPrintFile);
+    morph.addBorder(prettyPrintFile);
 
     //step 8
     morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
     morph.computeOpening(morph.zeroFramedAry, morph.morphAry, morph.tempAry);
     morph.aryToFile(morph.morphAry, openingOutFile);
+    prettyPrintFile << "Opening:" << endl;
     morph.prettyPrint(morph.morphAry, prettyPrintFile);
+    morph.addBorder(prettyPrintFile);
 
     //step 9
     morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
     morph.computeClosing(morph.zeroFramedAry, morph.morphAry, morph.tempAry);
     morph.aryToFile(morph.morphAry, closingOutFile);
+    prettyPrintFile << "Closing:" << endl;
     morph.prettyPrint(morph.morphAry, prettyPrintFile);
+    morph.addBorder(prettyPrintFile);
 
     //step 10
     imgFile.close();
