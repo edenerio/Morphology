@@ -269,6 +269,7 @@ int main(int argc, char *argv[]){
     morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
     morph.computeDilation(morph.zeroFramedAry, morph.morphAry);
     morph.aryToFile(morph.morphAry, dilateOutFile);
+    morph.prettyPrint(morph.morphAry, prettyPrintFile);
 
     //step 7
     morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
