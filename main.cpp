@@ -70,12 +70,10 @@ class Morphology{
     void loadImg(ifstream& img){
         //load imgFile to zeroFramedAry inside of frame,
         //begins at (rowOrigin, colOrigin)
-        int rowstart=rowFrameSize;
-        int colstart=colFrameSize;
 
         if(img.is_open()){
-            for(int i=rowstart; i<(rowSize-rowstart); i++){
-                for(int j=colstart; j<(colSize-colstart); j++){
+            for(int i=rowFrameSize; i<=numImgRows+1; i++){
+                for(int j=colFrameSize; j<=numImgCols+1; j++){
                     img >> zeroFramedAry[i][j];
                 }
             }
@@ -105,13 +103,13 @@ class Morphology{
         for(int i=rowFrameSize; i<rowSize; i++){
             for(int j=colFrameSize; j<colSize; j++){
                 if(inAry[i][j] > 0){
-                    onePixelErosion(i, j, inAry,outAry);
+                    outAry[i][j] = onePixelErosion(i, j, inAry,outAry);
                 }
             }
         }
     }
 
-    void onePixelErosion(int i, int j, int **inAry, int **outAry){
+    int onePixelErosion(int i, int j, int **inAry, int **outAry){
         int iOffset = i-rowOrigin;
         int jOffset = j-colOrigin;
         bool matchFlag = true; 
@@ -127,9 +125,9 @@ class Morphology{
         }
 
         if(matchFlag==true){
-            outAry[i][j] = 1;
+            return 1;
         }else{
-            outAry[i][j]=0;
+            return 0;
         }
     }
 
@@ -159,8 +157,8 @@ class Morphology{
     }
 
     void prettyPrint(int **ary, ofstream& out){
-        for(int i=rowFrameSize; i<(rowSize-rowFrameSize); i++){
-            for(int j=colFrameSize; j<(colSize-colFrameSize); j++){
+        for(int i=rowFrameSize; i<=numImgRows+1; i++){
+            for(int j=colFrameSize; j<=numImgCols+1; j++){
                 if(ary[i][j] == 0){
                     out << ". ";
                 }else{
@@ -190,10 +188,8 @@ class Morphology{
         outFile << imgMin << " ";
         outFile << imgMax << " ";
         outFile << endl;
-        int rowstart=rowFrameSize;
-        int colstart=colFrameSize;
-        for(int i=rowstart; i<(rowSize-rowstart); i++){
-            for(int j=colstart; j<(colSize-colstart); j++){
+        for(int i=rowFrameSize; i<(rowSize-rowFrameSize); i++){
+            for(int j=colFrameSize; j<(colSize-colFrameSize); j++){
                 outFile << ary[i][j] << " ";
             }
             outFile << endl;
@@ -245,6 +241,9 @@ int main(int argc, char *argv[]){
         imgFile >> imgCols;
         imgFile >> imgMin;
         imgFile >> imgMax;
+    }else{
+        cout << "Image text file couldn't be opened, closing program..." << endl;
+        return 2;
     }
 
     int strctRows, strctCols, strctMin, strctMax, rowOrigin, colOrigin;
@@ -255,6 +254,9 @@ int main(int argc, char *argv[]){
         structFile >> strctMax;
         structFile >> rowOrigin;
         structFile >> colOrigin;
+    }else{
+        cout << "Struct File couldn't be opened, closing program..." << endl;
+        return 3;
     }
 
     //Step 2
@@ -262,7 +264,7 @@ int main(int argc, char *argv[]){
     morph.allocateArrs();
 
     //Step 3
-    morph.zero2DAry(morph.zeroFramedAry, morph.rowSize, morph.colSize);
+    morph.zeroFramedAry=morph.zero2DAry(morph.zeroFramedAry, morph.rowSize, morph.colSize);
 
     //Step 4
     morph.loadImg(imgFile);
@@ -271,14 +273,14 @@ int main(int argc, char *argv[]){
     morph.addBorder(prettyPrintFile);
 
     //setp 5
-    morph.zero2DAry(morph.structAry, morph.numStructRows, morph.numStructCols);
+    morph.structAry=morph.zero2DAry(morph.structAry, morph.numStructRows, morph.numStructCols);
     morph.loadStruct(structFile);
     prettyPrintFile << "Structure Element:" << endl;
     morph.prettyPrintStruct(morph.structAry, prettyPrintFile);
     morph.addBorder(prettyPrintFile);
 
     //step 6
-    morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
+    morph.morphAry=morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
     morph.computeDilation(morph.zeroFramedAry, morph.morphAry);
     morph.aryToFile(morph.morphAry, dilateOutFile);
     prettyPrintFile << "Array after Dilation:" << endl;
@@ -286,7 +288,7 @@ int main(int argc, char *argv[]){
     morph.addBorder(prettyPrintFile);
 
     //step 7
-    morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
+    morph.morphAry=morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
     morph.computeErosion(morph.zeroFramedAry, morph.morphAry);
     morph.aryToFile(morph.morphAry, erodeOutFile);
     prettyPrintFile << "Array after Erosion:" << endl;
@@ -294,7 +296,7 @@ int main(int argc, char *argv[]){
     morph.addBorder(prettyPrintFile);
 
     //step 8
-    morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
+    morph.morphAry=morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
     morph.computeOpening(morph.zeroFramedAry, morph.morphAry, morph.tempAry);
     morph.aryToFile(morph.morphAry, openingOutFile);
     prettyPrintFile << "Opening:" << endl;
@@ -302,12 +304,11 @@ int main(int argc, char *argv[]){
     morph.addBorder(prettyPrintFile);
 
     //step 9
-    morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
+    morph.morphAry=morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
     morph.computeClosing(morph.zeroFramedAry, morph.morphAry, morph.tempAry);
     morph.aryToFile(morph.morphAry, closingOutFile);
     prettyPrintFile << "Closing:" << endl;
     morph.prettyPrint(morph.morphAry, prettyPrintFile);
-    morph.addBorder(prettyPrintFile);
 
     //step 10
     imgFile.close();
@@ -318,5 +319,6 @@ int main(int argc, char *argv[]){
     closingOutFile.close();
     prettyPrintFile.close();
 
+    cout << "done" << endl;
     return 0;
 }
