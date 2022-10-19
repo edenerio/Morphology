@@ -72,8 +72,8 @@ class Morphology{
         //begins at (rowOrigin, colOrigin)
 
         if(img.is_open()){
-            for(int i=rowFrameSize; i<=numImgRows+1; i++){
-                for(int j=colFrameSize; j<=numImgCols+1; j++){
+            for(int i=rowOrigin; i<=numImgRows; i++){
+                for(int j=colOrigin; j<=numImgCols; j++){
                     img >> zeroFramedAry[i][j];
                 }
             }
@@ -103,46 +103,43 @@ class Morphology{
         for(int i=rowFrameSize; i<rowSize; i++){
             for(int j=colFrameSize; j<colSize; j++){
                 if(inAry[i][j] > 0){
-                    outAry[i][j] = onePixelErosion(i, j, inAry,outAry);
+                    onePixelErosion(i, j, inAry,outAry);
                 }
             }
         }
     }
 
-    int onePixelErosion(int i, int j, int **inAry, int **outAry){
+    void onePixelErosion(int i, int j, int **inAry, int **outAry){
         int iOffset = i-rowOrigin;
         int jOffset = j-colOrigin;
-        bool matchFlag = true; 
-        int rIndex=0, cIndex=0;
-        while((matchFlag==true)&&(rIndex<numStructRows)){
-            while((matchFlag==true)&&(cIndex<numStructCols)){
-                if((structAry[rIndex][cIndex]>0) && (inAry[iOffset+rIndex][jOffset+cIndex])<=0){
+        bool matchFlag = true;
+        for(int i=0; i<numStructRows; i++){
+            for(int j=0; j<numStructCols; j++){
+                if(!matchFlag){
+                    break;
+                }
+                if((structAry[i][j]>0) && (inAry[iOffset+i][jOffset+j])<=0){
                     matchFlag=false;
                 }
-                cIndex++;
             }
-            rIndex++;
         }
-
         if(matchFlag==true){
-            return 1;
+            outAry[i][j] = 1;
         }else{
-            return 0;
+            outAry[i][j] = 0;
         }
     }
+
 
     void onePixelDilation(int i, int j, int **inAry, int **outAry){
         int iOffset = i-rowOrigin;
         int jOffset = j-colOrigin;
-        int rIndex = 0, cIndex = 0;
-        while(rIndex < numStructRows){
-            while(cIndex < numStructCols){
-                if(structAry[rIndex][cIndex] > 0){
-                    outAry[iOffset + rIndex][jOffset + cIndex] = 1;
+        for(int i=0; i<numStructRows; i++){
+            for(int j=0; j<numStructCols; j++){
+                if(structAry[i][j] > 0){
+                    outAry[iOffset + i][jOffset + j] = 1;
                 }
-                cIndex++;
             }
-            rIndex++;
         }
     }
 
@@ -157,8 +154,21 @@ class Morphology{
     }
 
     void prettyPrint(int **ary, ofstream& out){
-        for(int i=rowFrameSize; i<=numImgRows+1; i++){
-            for(int j=colFrameSize; j<=numImgCols+1; j++){
+        for(int i=rowOrigin; i<=numImgRows; i++){
+            for(int j=colOrigin; j<=numImgCols; j++){
+                if(ary[i][j] == 0){
+                    out << ". ";
+                }else{
+                    out << "1 ";
+                }
+            }
+            out << endl;
+        }
+    }
+
+    void prettyPrintDilation(int **ary, ofstream& out){
+        for(int i=0; i<rowSize; i++){
+            for(int j=0; j<colSize; j++){
                 if(ary[i][j] == 0){
                     out << ". ";
                 }else{
@@ -190,6 +200,20 @@ class Morphology{
         outFile << endl;
         for(int i=rowFrameSize; i<(rowSize-rowFrameSize); i++){
             for(int j=colFrameSize; j<(colSize-colFrameSize); j++){
+                outFile << ary[i][j] << " ";
+            }
+            outFile << endl;
+        }
+    }
+
+    void dilationToFile(int **ary, ofstream& outFile){
+        outFile << rowSize << " ";
+        outFile << colSize << " ";
+        outFile << imgMin << " ";
+        outFile << imgMax << " ";
+        outFile << endl;
+        for(int i=0; i<rowSize; i++){
+            for(int j=0; j<colSize; j++){
                 outFile << ary[i][j] << " ";
             }
             outFile << endl;
@@ -271,7 +295,7 @@ int main(int argc, char *argv[]){
     prettyPrintFile << "Image File:" << endl;
     morph.prettyPrint(morph.zeroFramedAry, prettyPrintFile);
     morph.addBorder(prettyPrintFile);
-
+    
     //setp 5
     morph.structAry=morph.zero2DAry(morph.structAry, morph.numStructRows, morph.numStructCols);
     morph.loadStruct(structFile);
@@ -282,9 +306,9 @@ int main(int argc, char *argv[]){
     //step 6
     morph.morphAry=morph.zero2DAry(morph.morphAry, morph.rowSize, morph.colSize);
     morph.computeDilation(morph.zeroFramedAry, morph.morphAry);
-    morph.aryToFile(morph.morphAry, dilateOutFile);
+    morph.dilationToFile(morph.morphAry, dilateOutFile);
     prettyPrintFile << "Array after Dilation:" << endl;
-    morph.prettyPrint(morph.morphAry, prettyPrintFile);
+    morph.prettyPrintDilation(morph.morphAry, prettyPrintFile);
     morph.addBorder(prettyPrintFile);
 
     //step 7
@@ -318,7 +342,6 @@ int main(int argc, char *argv[]){
     openingOutFile.close();
     closingOutFile.close();
     prettyPrintFile.close();
-
-    cout << "done" << endl;
+    
     return 0;
 }

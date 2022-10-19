@@ -9,7 +9,7 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/main.exe",
-            "args": ["img1.txt", "Elem1.txt", "dilate.txt", "erode.txt", "closing.txt", "opening.txt", "prettyprint.txt"],
+            "args": ["data3.txt", "Elem3.txt", "dilate.txt", "erode.txt", "closing.txt", "opening.txt", "prettyprint.txt"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
