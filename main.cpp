@@ -198,8 +198,8 @@ class Morphology{
         outFile << imgMin << " ";
         outFile << imgMax << " ";
         outFile << endl;
-        for(int i=rowFrameSize; i<(rowSize-rowFrameSize); i++){
-            for(int j=colFrameSize; j<(colSize-colFrameSize); j++){
+        for(int i=rowOrigin; i<=numImgRows; i++){
+            for(int j=colOrigin; j<=numImgCols; j++){
                 outFile << ary[i][j] << " ";
             }
             outFile << endl;
