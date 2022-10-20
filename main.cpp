@@ -72,10 +72,16 @@ class Morphology{
         //begins at (rowOrigin, colOrigin)
 
         if(img.is_open()){
-            for(int i=rowOrigin; i<=numImgRows; i++){
-                for(int j=colOrigin; j<=numImgCols; j++){
+            for(int i=rowFrameSize; i<=numImgRows+1; i++){
+                for(int j=colFrameSize; j<=numImgCols+1; j++){
                     img >> zeroFramedAry[i][j];
                 }
+            }
+            for(int i=0; i<rowSize; i++){
+                for(int j=0; j<colSize; j++){
+                    cout << zeroFramedAry[i][j] << " ";
+                }
+                cout << endl;
             }
         }
     }
@@ -154,8 +160,8 @@ class Morphology{
     }
 
     void prettyPrint(int **ary, ofstream& out){
-        for(int i=rowOrigin; i<=numImgRows; i++){
-            for(int j=colOrigin; j<=numImgCols; j++){
+        for(int i=rowOrigin; i<numImgRows; i++){
+            for(int j=colOrigin; j<numImgCols; j++){
                 if(ary[i][j] == 0){
                     out << ". ";
                 }else{
@@ -198,8 +204,8 @@ class Morphology{
         outFile << imgMin << " ";
         outFile << imgMax << " ";
         outFile << endl;
-        for(int i=rowOrigin; i<=numImgRows; i++){
-            for(int j=colOrigin; j<=numImgCols; j++){
+        for(int i=rowOrigin; i<numImgRows; i++){
+            for(int j=colOrigin; j<numImgCols; j++){
                 outFile << ary[i][j] << " ";
             }
             outFile << endl;
