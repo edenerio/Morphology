@@ -72,8 +72,8 @@ class Morphology{
         //begins at (rowOrigin, colOrigin)
 
         if(img.is_open()){
-            for(int i=rowOrigin; i<=numImgRows; i++){
-                for(int j=colOrigin; j<=numImgCols; j++){
+            for(int i=rowFrameSize; i<=numImgRows; i++){
+                for(int j=colFrameSize; j<=numImgCols; j++){
                     img >> zeroFramedAry[i][j];
                 }
             }
@@ -198,8 +198,8 @@ class Morphology{
         outFile << imgMin << " ";
         outFile << imgMax << " ";
         outFile << endl;
-        for(int i=rowOrigin; i<=numImgRows; i++){
-            for(int j=colOrigin; j<=numImgCols; j++){
+        for(int i=rowOrigin; i<numImgRows; i++){
+            for(int j=colOrigin; j<numImgCols; j++){
                 outFile << ary[i][j] << " ";
             }
             outFile << endl;
